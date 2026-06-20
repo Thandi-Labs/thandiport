@@ -11,10 +11,12 @@ from app.schemas.user import UserAdminUpdate, UserCreate, UserUpdate
 
 async def create_user(db: AsyncSession, data: UserCreate, is_superuser: bool = False) -> User:
     existing = await db.execute(
-        select(User).where((User.email == data.email) | (User.username == data.username))
+        select(User).where((User.email == data.email)
+                           | (User.username == data.username))
     )
     if existing.scalar_one_or_none():
-        raise ConflictException("A user with this email or username already exists")
+        raise ConflictException(
+            "A user with this email or username already exists")
 
     user = User(
         email=data.email,
@@ -25,6 +27,7 @@ async def create_user(db: AsyncSession, data: UserCreate, is_superuser: bool = F
     )
     db.add(user)
     await db.flush()
+    await db.refresh(user)
     return user
 
 
@@ -52,6 +55,7 @@ async def update_user(db: AsyncSession, user: User, data: UserUpdate) -> User:
         user.full_name = data.full_name
 
     await db.flush()
+    await db.refresh(user)
     return user
 
 
@@ -65,4 +69,5 @@ async def admin_update_user(db: AsyncSession, user: User, data: UserAdminUpdate)
     if data.full_name is not None:
         user.full_name = data.full_name
     await db.flush()
+    await db.refresh(user)
     return user

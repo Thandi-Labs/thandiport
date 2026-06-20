@@ -106,6 +106,7 @@ async def create_service(
     service = Service(**payload.model_dump())
     db.add(service)
     await db.flush()
+    await db.refresh(service)
     return service
 
 
@@ -120,6 +121,7 @@ async def update_service(
     for field, value in payload.model_dump(exclude_none=True).items():
         setattr(service, field, value)
     await db.flush()
+    await db.refresh(service)
     return service
 
 
@@ -159,6 +161,7 @@ async def grant_access(
         db.add(access)
 
     await db.flush()
+    await db.refresh(access)
     await audit_service.log_action(
         db,
         action=AuditAction.ACCESS_GRANT,

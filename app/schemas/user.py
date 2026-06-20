@@ -6,7 +6,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str = Field(min_length=3, max_length=100, pattern=r"^[a-zA-Z0-9_-]+$")
+    username: str = Field(min_length=3, max_length=100,
+                          pattern=r"^[a-zA-Z0-9_-]+$")
     password: str = Field(min_length=8, max_length=128)
     full_name: str | None = Field(default=None, max_length=255)
 
@@ -14,7 +15,8 @@ class UserCreate(BaseModel):
     @classmethod
     def password_strength(cls, v: str) -> str:
         if not any(c.isupper() for c in v):
-            raise ValueError("Password must contain at least one uppercase letter")
+            raise ValueError(
+                "Password must contain at least one uppercase letter")
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one digit")
         return v
@@ -36,7 +38,8 @@ class UserRead(BaseModel):
 
 class UserUpdate(BaseModel):
     full_name: str | None = Field(default=None, max_length=255)
-    username: str | None = Field(default=None, min_length=3, max_length=100, pattern=r"^[a-zA-Z0-9_-]+$")
+    username: str | None = Field(
+        default=None, min_length=3, max_length=100, pattern=r"^[a-zA-Z0-9_-]+$")
 
 
 class UserAdminUpdate(BaseModel):
@@ -54,7 +57,8 @@ class ChangePasswordRequest(BaseModel):
     @classmethod
     def password_strength(cls, v: str) -> str:
         if not any(c.isupper() for c in v):
-            raise ValueError("Password must contain at least one uppercase letter")
+            raise ValueError(
+                "Password must contain at least one uppercase letter")
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one digit")
         return v
@@ -72,7 +76,8 @@ class ResetPasswordRequest(BaseModel):
     @classmethod
     def password_strength(cls, v: str) -> str:
         if not any(c.isupper() for c in v):
-            raise ValueError("Password must contain at least one uppercase letter")
+            raise ValueError(
+                "Password must contain at least one uppercase letter")
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one digit")
         return v
