@@ -41,6 +41,20 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_PASSWORD: str
     FIRST_SUPERUSER_USERNAME: str = "admin"
 
+    # Email / SMTP
+    SMTP_ENABLED: bool = False
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USE_TLS: bool = False
+    SMTP_START_TLS: bool = True
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "noreply@thandilabs.com"
+    SMTP_FROM_NAME: str = "Thandilabs"
+
+    # Frontend base URL (used to build password reset links in emails)
+    FRONTEND_URL: str = "http://localhost:3000"
+
     @field_validator("DATABASE_URL")
     @classmethod
     def validate_database_url(cls, v: str) -> str:

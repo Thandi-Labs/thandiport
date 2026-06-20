@@ -28,6 +28,7 @@ from app.schemas.user import (
 )
 from app.services import audit_service, auth_service, user_service
 from app.services.auth_service import revoke_all_user_tokens
+from app.services import email_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -220,7 +221,7 @@ async def forgot_password(
     to avoid leaking user enumeration information.
     In production, send the token via email. Here it's returned directly for development.
     """
-    reset_token = await auth_service.initiate_password_reset(db, redis, payload.email)
+    reset_token, user = await auth_service.initiate_password_reset(db, redis, payload.email)
     await audit_service.log_action(
         db,
         action=AuditAction.PASSWORD_RESET_REQUEST,
@@ -229,6 +230,12 @@ async def forgot_password(
         request=request,
         metadata={"email": payload.email},
     )
+    if reset_token and user:
+        await email_service.send_password_reset_email(
+            to_email=user.email,
+            username=user.username,
+            reset_token=reset_token,
+        )
     response: dict[str, str] = {"message": "If that email exists, a reset link has been sent"}
     if reset_token and settings.APP_ENV == "development":
         response["reset_token"] = reset_token
@@ -251,5 +258,9 @@ async def reset_password(
         resource_id=str(user.id),
         status_code=200,
         request=request,
+    )
+    await email_service.send_password_changed_email(
+        to_email=user.email,
+        username=user.username,
     )
     return {"message": "Password has been reset successfully"}

@@ -11,7 +11,7 @@ from app.database import get_db
 from app.models.audit_log import AuditAction
 from app.models.user import User
 from app.schemas.user import ChangePasswordRequest, UserAdminUpdate, UserRead, UserUpdate
-from app.services import audit_service, user_service
+from app.services import audit_service, email_service, user_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -62,6 +62,10 @@ async def change_password(
         resource_id=str(current_user.id),
         status_code=200,
         request=request,
+    )
+    await email_service.send_password_changed_email(
+        to_email=current_user.email,
+        username=current_user.username,
     )
     return {"message": "Password changed successfully"}
 

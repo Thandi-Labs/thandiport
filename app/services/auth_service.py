@@ -116,21 +116,22 @@ async def revoke_all_user_tokens(db: AsyncSession, user_id: uuid.UUID) -> None:
 
 async def initiate_password_reset(
     db: AsyncSession, redis: aioredis.Redis, email: str
-) -> str | None:
-    """Returns a reset token if the user exists, else None (don't reveal existence)."""
+) -> tuple[str, User] | tuple[None, None]:
+    """Returns (reset_token, user) if the email exists, else (None, None).
+    Callers must not reveal whether the email exists — always return the same HTTP response."""
     from app.core.security import create_password_reset_token
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if user is None:
-        return None
+        return None, None
 
     token = create_password_reset_token(str(user.id))
     try:
         payload = decode_password_reset_token(token)
         await store_reset_token(redis, str(user.id), payload["jti"])
     except JWTError:
-        pass
-    return token
+        return None, None
+    return token, user
 
 
 async def complete_password_reset(
