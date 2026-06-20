@@ -1,7 +1,7 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
@@ -38,7 +38,8 @@ async def _seed_superuser() -> None:
             superuser = User(
                 email=settings.FIRST_SUPERUSER_EMAIL,
                 username=settings.FIRST_SUPERUSER_USERNAME,
-                hashed_password=hash_password(settings.FIRST_SUPERUSER_PASSWORD),
+                hashed_password=hash_password(
+                    settings.FIRST_SUPERUSER_PASSWORD),
                 is_active=True,
                 is_verified=True,
                 is_superuser=True,
@@ -72,6 +73,6 @@ app.include_router(services.router, prefix=API_PREFIX)
 app.include_router(audit.router, prefix=API_PREFIX)
 
 
-@app.get("/health", tags=["health"])
+@app.get("/health", tags=["health"], status_code=status.HTTP_200_OK)
 async def health_check() -> dict[str, str]:
     return {"status": "ok", "service": settings.APP_NAME, "version": settings.APP_VERSION}
